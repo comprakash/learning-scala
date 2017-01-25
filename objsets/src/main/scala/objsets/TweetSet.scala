@@ -41,8 +41,8 @@ abstract class TweetSet {
    * Question: Can we implment this method here, or should it remain abstract
    * and be implemented in the subclasses?
    */
-    def filter(p: Tweet => Boolean): TweetSet =
-      filterAcc(p, new Empty)
+  def filter(p: Tweet => Boolean): TweetSet =
+    filterAcc(p, new Empty)
   
   /**
    * This is a helper method for `filter` that propagetes the accumulated tweets.
@@ -55,7 +55,7 @@ abstract class TweetSet {
    * Question: Should we implment this method here, or should it remain abstract
    * and be implemented in the subclasses?
    */
-    def union(that: TweetSet): TweetSet
+  def union(that: TweetSet): TweetSet
   
   /**
    * Returns the tweet from this set which has the greatest retweet count.
@@ -66,8 +66,10 @@ abstract class TweetSet {
    * Question: Should we implment this method here, or should it remain abstract
    * and be implemented in the subclasses?
    */
-    def mostRetweeted: Tweet
-  
+  def mostRetweeted: Tweet
+
+  def mostRetweeted(max: Tweet): Tweet
+
   /**
    * Returns a list containing all tweets of this set, sorted by retweet count
    * in descending order. In other words, the head of the resulting list should
@@ -77,7 +79,9 @@ abstract class TweetSet {
    * Question: Should we implment this method here, or should it remain abstract
    * and be implemented in the subclasses?
    */
-    def descendingByRetweet: TweetList
+  def descendingByRetweet: TweetList
+
+  def descendingByRetweet(list: TweetSet, newList: TweetList): TweetList
   
   /**
    * The following methods are already implemented
@@ -108,13 +112,17 @@ abstract class TweetSet {
 }
 
 class Empty extends TweetSet {
-    def filterAcc(p: Tweet => Boolean, acc: TweetSet): TweetSet = Empty.this
+  def filterAcc(p: Tweet => Boolean, acc: TweetSet): TweetSet = acc
 
   def union(that: TweetSet): TweetSet = that
 
-  def mostRetweeted: Tweet = new Tweet("Nil","Nil",0)
+  def mostRetweeted: Tweet = throw new java.util.NoSuchElementException("EmptyTweetSet")
+
+  def mostRetweeted(max: Tweet): Tweet = max
 
   def descendingByRetweet: TweetList = Nil
+
+  def descendingByRetweet(list: TweetSet, newList: TweetList): TweetList = newList
   /**
    * The following methods are already implemented
    */
@@ -130,24 +138,27 @@ class Empty extends TweetSet {
 
 class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
 
-    def filterAcc(p: Tweet => Boolean, acc: TweetSet): TweetSet =
-      if (p(elem)) filterAcc(p, acc.incl(elem))
-      else acc
+  def filterAcc(p: Tweet => Boolean, acc: TweetSet): TweetSet =
+    right.filterAcc(p, left.filterAcc(p, {if (p(elem)) acc.incl(elem) else acc}))
 
   def union(that: TweetSet): TweetSet =
-    if (that.contains(elem)) left.union(that).union(right.union(that))
-    else left.union(that.incl(elem)).union(right.union(that.incl(elem)))
+    right.union(left.union({if (!that.contains(elem)) that.incl(elem) else that}))
 
   def mostRetweeted: Tweet =
-    if (elem.retweets >= left.mostRetweeted.retweets && elem.retweets >= right.mostRetweeted.retweets) this.elem
-    else if (left.mostRetweeted.retweets >= right.mostRetweeted.retweets) left.mostRetweeted
-    else right.mostRetweeted
+    mostRetweeted(elem)
+
+  def mostRetweeted(max: Tweet): Tweet =
+    right.mostRetweeted(left.mostRetweeted({if (elem.retweets > max.retweets) elem else max}))
 
   def descendingByRetweet: TweetList =
     descendingByRetweet(this, Nil)
 
   def descendingByRetweet(list: TweetSet, newList: TweetList): TweetList =
-    descendingByRetweet(list.remove(mostRetweeted), new Cons(mostRetweeted, newList))
+    try {
+      descendingByRetweet(list.remove(list.mostRetweeted), if (newList.isEmpty) new Cons(list.mostRetweeted, Nil) else new Cons(newList.head, new Cons(list.mostRetweeted, newList.tail)))
+    } catch {
+      case e: Exception => return newList
+    }
     
   /**
    * The following methods are already implemented
@@ -158,11 +169,10 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
     else if (elem.text < x.text) right.contains(x)
     else true
 
-  def incl(x: Tweet): TweetSet = {
+  def incl(x: Tweet): TweetSet =
     if (x.text < elem.text) new NonEmpty(elem, left.incl(x), right)
     else if (elem.text < x.text) new NonEmpty(elem, left, right.incl(x))
     else this
-  }
 
   def remove(tw: Tweet): TweetSet =
     if (tw.text < elem.text) new NonEmpty(elem, left.remove(tw), right)
@@ -202,7 +212,7 @@ object GoogleVsApple {
   val google = List("android", "Android", "galaxy", "Galaxy", "nexus", "Nexus")
   val apple = List("ios", "iOS", "iphone", "iPhone", "ipad", "iPad")
 
-    lazy val googleTweets: TweetSet = ???
+  lazy val googleTweets: TweetSet = ???
   lazy val appleTweets: TweetSet = ???
   
   /**
