@@ -1,105 +1,90 @@
 package example
 
-import org.scalatest.FunSuite
-
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
-
 /**
- * This class implements a ScalaTest test suite for the methods in object
+ * This class implements a munit test suite for the methods in object
  * `Lists` that need to be implemented as part of this assignment. A test
  * suite is simply a collection of individual tests for some specific
  * component of a program.
  *
- * A test suite is created by defining a class which extends the type
- * `org.scalatest.FunSuite`. When running ScalaTest, it will automatically
- * find this class and execute all of its tests.
- *
- * Adding the `@RunWith` annotation enables the test suite to be executed
- * inside eclipse using the built-in JUnit test runner.
- *
- * You have two options for running this test suite:
- *
- * - Start the sbt console and run the "test" command
- * - Right-click this file in eclipse and chose "Run As" - "JUnit Test"
+ * To run this test suite, start "sbt" then run the "test" command.
  */
- @RunWith(classOf[JUnitRunner])
-  class ListsSuite extends FunSuite {
- 
+class ListsSuite extends munit.FunSuite:
+
   /**
-   * Tests are written using the `test` operator which takes two arguments:
-   *
-   * - A description of the test. This description has to be unique, no two
-   *   tests can have the same description.
-   * - The test body, a piece of Scala code that implements the test
-   *
+   * Tests are written using the `test("description") { ... }` syntax
    * The most common way to implement a test body is using the method `assert`
    * which tests that its argument evaluates to `true`. So one of the simplest
    * successful tests is the following:
    */
-  test("one plus one is two")(assert(1 + 1 == 2))
+  test("one plus one is two (0pts)") {
+    assert(1 + 1 == 2)
+  }
 
-
-  /**
-   * In Scala, it is allowed to pass an argument to a method using the block
-   * syntax, i.e. `{ argument }` instead of parentheses `(argument)`.
-   *
-   * This allows tests to be written in a more readable manner:
-   */
-  test("one plus one is two?") {
+  test("one plus one is three (0pts)?") {
     assert(1 + 1 == 2) // This assertion fails! Go ahead and fix it.
   }
 
-
   /**
-   * One problem with the previous (failing) test is that ScalaTest will
+   * One problem with the previous (failing) test is that munit will
    * only tell you that a test failed, but it will not tell you what was
    * the reason for the failure. The output looks like this:
    *
    * {{{
-   *    [info] - one plus one is three? *** FAILED ***
+   * ==> X example.ListSuite.one plus one is three (0pts)?  0.007s munit.FailException: /tmp/example/src/test/scala/example/ListSuite.scala:26 assertion failed
+   * 25:  test("one plus one is two (0pts)") {
+   * 26:      assert(1 + 1 == 3)
+   * 27:  }
    * }}}
    *
-   * This situation can be improved by using a special equality operator
-   * `===` instead of `==` (this is only possible in ScalaTest). So if you
-   * run the next test, ScalaTest will show the following output:
+   * This situation can be improved by using a assertEquals
+   * (this is only possible in munit). So if you
+   * run the next test, munit will show the following output:
    *
    * {{{
-   *    [info] - details why one plus one is not three *** FAILED ***
-   *    [info]   2 did not equal 3 (ListsSuite.scala:67)
+   * ==> X example.ListSuite.details why one plus one is not three (0pts)  0.006s munit.FailException: /tmp/example/src/test/scala/example/ListSuite.scala:72
+   * 71:  test("details why one plus one is not three (0pts)") {
+   * 72:      assertEquals(1 + 1, 3) // Fix me, please!
+   * 73:  }
+   * values are not the same
+   * => Obtained
+   * 3
+   * => Diff (- obtained, + expected)
+   * -3
+   * +2
    * }}}
    *
-   * We recommend to always use the `===` equality operator when writing tests.
+   * We recommend to always use the assertEquals equality operator
+   * when writing tests.
    */
-  test("details why one plus one is not two") {
-    assert(1 + 1 === 2) // Fix me, please!
+  test("details why one plus one is not three (0pts)") {
+    assertEquals(1 + 1, 2) // Fix me, please!
   }
 
   /**
-   * In order to test the exceptional behavior of a methods, ScalaTest offers
-   * the `intercept` operation.
+   * Exceptional behavior of a methods can be tested using a try/catch
+   * and a failed assertion.
    *
    * In the following example, we test the fact that the method `intNotZero`
    * throws an `IllegalArgumentException` if its argument is `0`.
    */
-  test("intNotZero throws an exception if its argument is 0") {
-    intercept[IllegalArgumentException] {
-      intNotZero(0)
-    }
-  }
+   test("intNotZero throws an exception if its argument is 0") {
+     try
+       intNotZero(0)
+       fail("No exception has been thrown")
+     catch
+       case e: IllegalArgumentException => ()
+   }
 
-  def intNotZero(x: Int): Int = {
-    if (x == 0) throw new IllegalArgumentException("zero is not allowed")
-    else x
-  }
-
+   def intNotZero(x: Int): Int =
+     if x == 0 then throw IllegalArgumentException("zero is not allowed")
+     else x
 
   /**
    * Now we finally write some tests for the list functions that have to be
    * implemented for this assignment. We fist import all members of the
    * `List` object.
    */
-  import Lists._
+  import Lists.*
 
 
   /**
@@ -113,46 +98,15 @@ import org.scalatest.junit.JUnitRunner
    * however it is recommended to write an individual `test` statement for
    * every tested aspect of a method.
    */
-  test("sum of a few numbers") {
-    assert(sum(List(1,2,0)) === 3)
+  test("sum of a few numbers (10pts)") {
+    assert(sum(List(1,2,0)) == 3)
   }
 
-  test("sum of a negative numbers in list") {
-    assert(sum(List(1,2,-4,-5)) === -6)
+  test("max of a few numbers (10pts)") {
+    assert(max(List(3, 7, 2)) == 7)
   }
 
-  test("sum of a zero elements") {
-    assert(sum(List(0,0,0)) === 0)
-  }
 
-  test("sum of a empty list") {
-    assert(sum(List()) === 0)
-  }
 
-  test("sum of a repeated elements in list") {
-    assert(sum(List(1,2,2,4)) === 9)
-  }
-
-  test("max of a few numbers") {
-    assert(max(List(3, 7, 2)) === 7)
-  }
-
-  test("max of a negative numbers in list") {
-    assert(max(List(-1,-2,-4,-5)) === -1)
-  }
-
-  test("max of a zero elements") {
-    assert(max(List(0,0,0)) === 0)
-  }
-
-  test("max of a empty list") {
-    intercept[NoSuchElementException] {
-      max(List())
-    }
-  }
-
-  test("max of a repeated elements in list") {
-    assert(max(List(1,2,4,2,4)) === 4)
-  }
-
-}
+  import scala.concurrent.duration.*
+  override val munitTimeout = 1.seconds

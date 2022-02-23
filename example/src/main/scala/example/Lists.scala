@@ -1,9 +1,6 @@
 package example
 
-import scala.annotation.tailrec
-
-
-object Lists {
+object Lists:
 
   /**
    * This method computes the sum of all elements in the list xs. There are
@@ -25,14 +22,8 @@ object Lists {
    * @param xs A list of natural numbers
    * @return The sum of all elements in `xs`
    */
-    def sum(xs: List[Int]): Int = {
-      @tailrec
-      def loop(acc: Int, xsn: List[Int]): Int =
-        if (xsn.isEmpty) acc
-        else loop(acc + xsn.head, xsn.tail)
-      loop(0, xs)
-    }
-  
+  def sum(xs: List[Int]): Int = xs.sum
+
   /**
    * This method returns the largest element in a list of integers. If the
    * list `xs` is empty it throws a `java.util.NoSuchElementException`.
@@ -46,14 +37,4 @@ object Lists {
    * @return The largest element in `xs`
    * @throws java.util.NoSuchElementException if `xs` is an empty list
    */
-    def max(xs: List[Int]): Int = {
-      @tailrec
-      def loop(maxElement: Int, xsn: List[Int]): Int =
-        if (xsn.isEmpty) maxElement
-        else {
-          if (maxElement>xsn.head) loop (maxElement, xsn.tail)
-          else loop(xsn.head, xsn.tail)
-        }
-      loop(xs.head, xs.tail)
-    }
-  }
+  def max(xs: List[Int]): Int = xs.max

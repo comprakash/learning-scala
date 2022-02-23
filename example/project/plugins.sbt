@@ -1,1 +1,1 @@
-addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "4.0.0")
+addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % "0.9.26")
